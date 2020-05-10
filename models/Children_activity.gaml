@@ -1,7 +1,7 @@
 /***
-* Name: Childrenactivityfixing
-* Author: ja234z
-* Description: 
+* Name: Childrenactivity
+* Author: Jonatan Almagor
+* Description:simulation of movment of children in the city and physical activity
 * Tags: Tag1, Tag2, TagN
 ***/
 
