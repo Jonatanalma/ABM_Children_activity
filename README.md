@@ -10,6 +10,6 @@ Each child has socio-economic characteristics that are based on data from census
 Physical activity is measured for the agents by minutes of MVPA- medium to vigorous physical activity.
 The environment (the city) is based on GIS layers of land-use, roads, buildings and shops.
 One cycle in the model represents one minute.
-Graphs include distribution of physical activity in the population, time spent in diffrent types of land use and density of movment in the roads network.
+Graphs include distribution of physical activity in the population, duration of landuse usage.
  
 
