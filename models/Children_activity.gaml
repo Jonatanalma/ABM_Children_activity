@@ -1,8 +1,8 @@
 /***
-* Name: Childrenactivityfixing
-* Author: ja234z
-* Description: 
-* Tags: Tag1, Tag2, TagN
+* Name: Childrenactivity
+* Author: Jonatan Almagor
+* Description: Agent based simulation of children movment and physical activity in an urban environment
+* Tags: ABM, city, urban, physical activity, children
 ***/
 
 
