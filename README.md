@@ -1,15 +1,8 @@
 # ABM_Children_activity
-This is an agent-based model in development.
-The code is writen using the GAMA-Platform.
 
-The ABM simulates children’s movement, activity and measures physical activity in the urban landscape.
-Children follow a daily schedule of activities including: attending school and after school activities such as: playing in the park, formal sport activities, playing around the neighbourhood, meeting a friend and shopping.
-For each activity the agents select the relevant land-use for the activity and consider distance and the presence of other children.
-Children decide on a transportation mode: walking or a car.
-Each child has socio-economic characteristics that are based on data from census zone: socio-economic-state, number of cars, gender and personal charctristics such as tendency to be active.
-Physical activity is measured for the agents by minutes of MVPA- medium to vigorous physical activity.
-The environment (the city) is based on GIS layers of land-use, roads, buildings and shops.
-One cycle in the model represents one minute.
-Graphs include distribution of physical activity in the population, duration of landuse usage.
+An agent-based model (ABM) that explores how changes to outdoor play, school-based activities and active travel affect children’s physical activity (PA). Unique to this model is the ability to represent the complexity of multiple interdependent levels including built and social environment, individual characteristics, constraints of time/space, and policy measures, which influence PA. 
+The ABM generates a synthetic population of agents representing 9-11 year-olds residing in the city of Glasgow, characterised by socio-economic demographics consistent with census data. The urban environment is represented by geospatial data layers, including land use, houses, schools and street networks. Agents follow a daily schedule: attending school, formal sport, outdoor play and meeting with friends. Agents’ decisions regarding the location of an activity and travel mode are affected by land use availability, accessibility, crime levels and street walkability. As agents engage in activities, they accumulate minutes of moderate-to-vigorous PA (MVPA). To define the proportion of time spent in MVPA per activity and location we used real PA data of children tracked in the SPACES project. 
+The code is written using the GAMA-Platform.
+
  
 
