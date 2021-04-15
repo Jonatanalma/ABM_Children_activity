@@ -1,12 +1,13 @@
 /***
-* Name: An ABM of children's physical activity in urban settings
+* Name: Children-activity v2
 * Author: Jonatan Almagor
 * Description: 
-* Tags: Physical activity ABM
+* Tags: Tag1, Tag2, TagN
+
 ***/
 
 
-model Children_activity
+model Children_activity2
 
 global {
 	
@@ -38,7 +39,7 @@ global {
     float min_visits<-0.0;
 	float max_less_min<-1.0;
 	//MVPA probabilities
-	float mvpa_walk<-float(data[5,23]);///###23
+	float mvpa_walk<-float(data[5,23]);///###23   rnd (0.8, 1.2, 0.05)
 	float mvpa_pe_b<-float(data[6,19]);////19
 	float mvpa_pe_g<-float(data[5,19]);////19
 	float mvpa_arrival_b<-float(data[6,9]);//9
@@ -90,6 +91,7 @@ global {
 	float g_a<-0.0; //prob for garden play
 	float imp_kids<-0.25;
 	float imp_f<-0.3; //impact of friends on my_fit
+	string travel_mode<-"usual" among:["usual", "active_school","walk_all"];
 	graph child_graph<-([]);
 	string optimizer_type <- "Dijkstra" among: ["NBAStar", "NBAStarApprox", "Dijkstra", "AStar", "BellmannFord", "FloydWarshall"];
 	/*6 types of optimizer (algorithms) can be used for the shortest path computation:
@@ -200,8 +202,10 @@ global {
 				if socio=2 {num_car<-rnd_choice(my_zone.C2_car_prob);}
 				if socio=3 {num_car<-rnd_choice(my_zone.C1_car_prob);}
 				if socio=4 {num_car<-rnd_choice(my_zone.AB_car_prob);}
-				my_crim_imp<-my_zone.norm_crime<=0?1:(my_zone.norm_crime<0.7?0.8:(my_zone.norm_crime>=1.3? 0.4:0.6)); //impact of crime of outplay no impact if crime<=0 low impact-80% 0-0.7, medium 60% [0.7-1.3] high 40% >=1.3
-				my_neigh_prob<- min(1,n_p*outplay*my_crim_imp);
+				my_crime<-myself.norm_crime;
+				my_simd<-myself.simd;
+				my_simd_imp<-my_simd=5?1.0:(my_simd=4?0.9:(my_simd=3? 0.8:(my_simd=2? 0.7:0.6))); //impact of crime of outplay no impact if crime<=0 low impact-80% 0-0.7, medium 60% [0.7-1.3] high 40% >=1.3
+				my_neigh_prob<- min(1,n_p*outplay*my_simd_imp);
 				}
 			}	
 	}
@@ -385,7 +389,8 @@ global {
 	
 	ask children parallel:true{
 		my_best_friends<-child_graph neighbors_of(self);
-		fit_dif<-my_fit-my_best_friends mean_of(each.my_fit);	
+		num_friends<-length(my_best_friends);
+		//fit_dif<-my_fit-my_best_friends mean_of(each.my_fit);	
 		act_list<-my_garden=nil?[1,2]:[1,2,3];//updating the list of activities from home shoping=1, neigh=2,garden=3
 		
 		}
@@ -411,11 +416,11 @@ global {
 		write "FSA socio-2: " + children where(each.socio=2) mean_of (each.num_sport) with_precision 1 color:#magenta;
 		write "FSA socio-3: " + children where(each.socio=3) mean_of (each.num_sport) with_precision 1 color:#magenta;
 		write "FSA socio-4: " + children where(each.socio=4) mean_of (each.num_sport) with_precision 1 color:#magenta;
-		write "_____crime___________";
-		write "crime impact socio-1(poor) "+ children where(each.socio=1) mean_of (each.my_crim_imp) with_precision 1 color:#magenta ;
-		write "crime impact socio-2 "+ children where(each.socio=2) mean_of (each.my_crim_imp) with_precision 1 color:#magenta ;
-		write "crime impact socio-3 "+ children where(each.socio=3) mean_of (each.my_crim_imp) with_precision 1 color:#magenta ;
-		write "crime impact socio-4 "+ children where(each.socio=4) mean_of (each.my_crim_imp) with_precision 1 color:#magenta ;
+		write "_____simd impact on neigh play___________";
+		write "socio-1(DE) "+ children where(each.socio=1) mean_of (each.my_simd_imp) with_precision 2 color:#magenta ;//my_crim_imp
+		write "socio-2 "+ children where(each.socio=2) mean_of (each.my_simd_imp) with_precision 2 color:#magenta ;
+		write "socio-3 "+ children where(each.socio=3) mean_of (each.my_simd_imp) with_precision 2 color:#magenta ;
+		write "socio-4 (AB) "+ children where(each.socio=4) mean_of (each.my_simd_imp) with_precision 2 color:#magenta ;
 		write "_____MVPA___________";
 		write "mvpa avg: " +mvpa_avg color:#red;
 		write "mvpa std: " +mvpa_std color:#red;
@@ -428,6 +433,20 @@ global {
 		write "Fit SES-2 "+ children where(each.socio=2) mean_of (each.my_fit) with_precision 1 color:#magenta ;
 		write "Fit SES-3 "+ children where(each.socio=3) mean_of (each.my_fit) with_precision 1 color:#magenta ;
 		write "Fit SES-4(rich) "+ children where(each.socio=4) mean_of (each.my_fit) with_precision 1 color:#magenta ;
+		write "_____Crime distribution_____________";
+		write "<=0 "+ (length(children where(each.my_crime<=0))/nm_agents) with_precision 2 +
+		" 0-0.5 "+ (length(children where(each.my_crime>0 and each.my_crime<=0.5))/nm_agents) with_precision 2 +
+		" 0.5-0.8 "+ (length (children where(each.my_crime>0.5 and each.my_crime<=0.8))/nm_agents) with_precision 2 ;
+		write " 0.8-1.1 "+ (length(children where(each.my_crime>0.8 and each.my_crime<=1.1))/nm_agents) with_precision 2 +
+		" 1.1-1.4 "+ (length(children where(each.my_crime>1.1 and each.my_crime<=1.4))/nm_agents) with_precision 2 +
+		" 1.4-1.7 "+ (length(children where(each.my_crime>1.4 and each.my_crime<=1.7))/nm_agents) with_precision 2 +
+		" >1.7 "+(length(children where(each.my_crime>1.7))/nm_agents) with_precision 2 ;
+		write "_______Outdoor time______";
+		write "DE "+ "Play: " +children where(each.socio=1) mean_of (each.daily_od) with_precision 2 + " OD_MVPA: "+children where(each.socio=1) mean_of (each.daily_od_mvpa) with_precision 2 +" FSA: " +children where(each.socio=1) mean_of(each.lu_list[26]/days);
+		write "C2 "+ "Play: "+ children where(each.socio=2) mean_of (each.daily_od) with_precision 2 + " OD_MVPA: "+children where(each.socio=2) mean_of (each.daily_od_mvpa) with_precision 2 +" FSA: " +children where(each.socio=2) mean_of(each.lu_list[26]/days);
+		write "C1 "+ "Play: "+ children where(each.socio=3) mean_of (each.daily_od) with_precision 2 + " OD_MVPA: "+children where(each.socio=3) mean_of (each.daily_od_mvpa) with_precision 2+" FSA: " +children where(each.socio=3) mean_of(each.lu_list[26]/days);
+		write "AB "+ "Play: "+ children where(each.socio=4) mean_of (each.daily_od) with_precision 2 + " OD_MVPA: "+children where(each.socio=4) mean_of (each.daily_od_mvpa) with_precision 2+" FSA: " +children where(each.socio=4) mean_of(each.lu_list[26]/days);
+		write "All "+ "Play: " +children mean_of (each.daily_od) with_precision 2 + " OD_MVPA: "+children  mean_of (each.daily_od_mvpa) with_precision 2 +" FSA: " +children mean_of(each.lu_list[26]/days);
 		write_stat<-false;	
 		
 	}
@@ -468,7 +487,7 @@ global {
 				do zone_mvpa;
 			}
 			mvpa_avg<- children mean_of (each.avg_mvpa) with_precision 1 ;
-			mvpa_recent_avg<-children mean_of (each.avg_mvpa_recent) with_precision 1 ;//mvpa of the last two weeks
+			//mvpa_recent_avg<-children mean_of (each.avg_mvpa_recent) with_precision 1 ;//mvpa of the last two weeks
 			mvpa_std<-standard_deviation (children collect(each.avg_mvpa)) with_precision 1;
 			
 		}
@@ -477,7 +496,9 @@ global {
 	 
 reflex friends_meeting when: current_hour=8.0{
 	ask children{
-		if formal_sport_act!=nil { today_sport <-one_of(formal_sport_act where (each.day=week_day));}
+		if formal_sport_act!=nil { 
+			today_sport <-one_of(formal_sport_act where (each.day=week_day));
+		}
 		have_formal<-today_sport=nil? false:true; //check if any formal act_today	
 		if have_formal=false{
 				meeting_friends<-flip(f_m)?true:false;	
@@ -494,22 +515,25 @@ reflex friends_meeting when: current_hour=8.0{
    	ask children where(length(each.host_friends)!=0){
    		meeting_friends<-true;	
    		meet_hour<-15.5+rnd(0,10)*0.25;//at this time the host will invoke the meeting while updating the other friends 
-   	}		
+   	}
+   	
 }	 
 
 
 
 reflex save_simulation when:days=save_on_day and current_hour=8.0{
 		write "saving simulation+"+self+ date("now");
-		ask zone{do zone_stat;}	
+		ask children parallel:true {do collect_mvpa;}
+		ask zone parallel:true{do zone_stat;}	
 		float zero_to_30<-length(children where(each.avg_mvpa<=30))/nm_agents with_precision 2  ;
-		float thirty_to_40<-length(children where(each.avg_mvpa>30 and each.avg_mvpa<=40))/nm_agents with_precision 2  ;
-		float forty_to_50<-length(children where(each.avg_mvpa>40 and each.avg_mvpa<=50))/nm_agents with_precision 2  ;
-		float fifty_to_60<-length(children where(each.avg_mvpa>50 and each.avg_mvpa<=60))/nm_agents with_precision 2 ;
-		float sixty_to_70<-length(children where(each.avg_mvpa>60 and each.avg_mvpa<=70))/nm_agents with_precision 2 ;
-		float seventy_to_80<-length(children where(each.avg_mvpa>70 and each.avg_mvpa<=80))/nm_agents with_precision 2  ;
-		float Eighty_to_90<-length(children where(each.avg_mvpa>80 and each.avg_mvpa<=90))/nm_agents with_precision 2  ;
-		float ninty_over<-length(children where(each.avg_mvpa>90))/nm_agents ;
+		float thirty_to_40<-length(children where(each.avg_mvpa>30 and each.avg_mvpa<40))/nm_agents with_precision 2  ;
+		float forty_to_50<-length(children where(each.avg_mvpa>=40 and each.avg_mvpa<50))/nm_agents with_precision 2  ;
+		float fifty_to_60<-length(children where(each.avg_mvpa>=50 and each.avg_mvpa<60))/nm_agents with_precision 2 ;
+		float sixty_to_70<-length(children where(each.avg_mvpa>=60 and each.avg_mvpa<70))/nm_agents with_precision 2 ;
+		float seventy_to_80<-length(children where(each.avg_mvpa>=70 and each.avg_mvpa<80))/nm_agents with_precision 2  ;
+		float Eighty_to_90<-length(children where(each.avg_mvpa>=80 and each.avg_mvpa<90))/nm_agents with_precision 2  ;
+		float ninty_over<-length(children where(each.avg_mvpa>=90))/nm_agents ;
+		float per_avg_under_sixty<-zero_to_30 + thirty_to_40+forty_to_50+fifty_to_60;
 		int mvpa_socio1<-children where(each.socio=1) mean_of (each.avg_mvpa);
 		int mvpa_socio2<-children where(each.socio=2) mean_of (each.avg_mvpa);
 		int mvpa_socio3<-children where(each.socio=3) mean_of (each.avg_mvpa);
@@ -525,40 +549,46 @@ reflex save_simulation when:days=save_on_day and current_hour=8.0{
 		float R_mvpa_fit<-(children collect(each.avg_mvpa))  correlation (children collect(each.my_fit)) with_precision 2 ;
 		float R_mvpa_outplay<-(children collect(each.avg_mvpa))  correlation (children collect(each.outplay)) with_precision 2 ;
 		float R_mvpa_dmin_outplay<-(children collect(each.avg_mvpa))  correlation (children collect(each.daily_od)) with_precision 2 ;
+		float R_simd<-(children collect(each.avg_mvpa))  correlation (children collect(each.my_simd)) with_precision 2 ;
+		float R_car<-(children collect(each.avg_mvpa))  correlation (children collect(each.num_car)) with_precision 2 ;
+		float R_friends<-(children collect(each.avg_mvpa))  correlation (children collect(each.num_friends)) with_precision 2 ;
 		float avg_mvpa<-children mean_of (each.avg_mvpa);
 		float avg_mvpa_boy<-children where(each.gender="boy") mean_of (each.avg_mvpa);
 		float avg_mvpa_girl<-children where(each.gender="girl") mean_of (each.avg_mvpa);
-		int mvpa_home<-children mean_of(each.list_lu_mvpa[1]/days) ; //home
-		int mvpa_sc<-children mean_of(each.list_lu_mvpa[20]/days) ; //school
-		int mvpa_road<- children mean_of(each.list_lu_mvpa[23]/days); //road
-		float mvpa_play_field<-children mean_of((each.list_lu_mvpa[15]+each.list_lu_mvpa[21]+each.list_lu_mvpa[14])/days) ; //playing fields
-		int mvpa_home_garden<-children mean_of(each.list_lu_mvpa[17]/days) ; //home Garden
-		float mvpa_park<-children mean_of(each.list_lu_mvpa[18]/days) ;//Park
-		float mvpa_PG<-children mean_of(each.list_lu_mvpa[3]/days) ;//Public garden
-		float mvpa_amenity<-children mean_of(each.list_lu_mvpa[2]/days) ;//Amenity space
-		float mvpa_shops<-children mean_of(each.list_lu_mvpa[7]/days) ;//shops
-		float mvpa_F_home<-children mean_of(each.list_lu_mvpa[24]/days); //friends home
-		int mvpa_fsa<-children mean_of(each.list_lu_mvpa[26]/days) ;//FSA
+		int mvpa_home<-children mean_of(each.mvpa_home) ; //home
+		int mvpa_sc<-children mean_of(each.mvpa_sc) ; //school
+		int mvpa_road<- children mean_of(each.mvpa_road); //road
+		float mvpa_play_field<-children mean_of(each.mvpa_play_field) ; //playing fields
+		int mvpa_home_garden<-children mean_of(each.mvpa_home_garden) ; //home Garden
+		float mvpa_park<-children mean_of(each.mvpa_park) ;//Park
+		float mvpa_PG<-children mean_of(each.mvpa_PG) ;//Public garden
+		float mvpa_amenity<-children mean_of(each.mvpa_amenity) ;//Amenity space
+		float mvpa_shops<-children mean_of(each.mvpa_shops) ;//shops
+		float mvpa_F_home<-children mean_of(each.mvpa_F_home); //friends home
+		int mvpa_fsa<-children mean_of(each.mvpa_fsa) ;//FSA
 		int mvpa_OD<-children mean_of(each.daily_od_mvpa) ;//total outdoor
 		int fsa_time<-children mean_of(each.lu_list[26]/days);//FSA
 		int OD_time<-children mean_of(each.daily_od) ;////total outdoor
-		int SD_mvpa<-(children variance_of (each.avg_mvpa))^0.5; 
+		int SD_mvpa<-(children variance_of (each.avg_mvpa))^0.5;
+		float per_daily_sixty<-length (children where(each.per_days_sixt>=0.9));
 		string file_name<-"../includes/results/"+save_file;
-		save zone type: "csv" to: file_name+"/zone/Sc_int"+SC_inter+"/"+"Neigh_play"+n_p+"/zone"+"SC"+SC_inter+"np"+n_p+"imp_k"+imp_kids+self+ ".csv" ; 
-		save children type: "csv" to: file_name+"/children/Sc_int"+SC_inter+"/"+"Neigh_play"+n_p+"/children"+"SC"+SC_inter+"np"+n_p+"imp_k"+imp_kids+self+ ".csv" ; 
-		list tmp<-[imp_f,SC_inter,n_p,f_m,imp_kids,avg_mvpa,avg_mvpa_boy,avg_mvpa_girl, zero_to_30,thirty_to_40,forty_to_50,fifty_to_60,sixty_to_70,seventy_to_80,Eighty_to_90,ninty_over,
+		save zone type: "csv" to: file_name+"/zone/Sc_int"+SC_inter+travel_mode+"/"+"Neigh_play"+n_p+"/zone"+"SC"+SC_inter+"np"+n_p+"imp_k"+imp_kids+self+ ".csv" ; 
+		save children type: "csv" to: file_name+"/children/Sc_int"+SC_inter+"_"+travel_mode+"/"+"Neigh_play"+n_p+"/children"+"SC"+SC_inter+"np"+n_p+"imp_k"+imp_kids+self+ ".csv" ; 
+		list tmp<-["s_name",travel_mode,imp_f,SC_inter,n_p,f_m,imp_kids,avg_mvpa,SD_mvpa,per_avg_under_sixty,per_daily_sixty,avg_mvpa_boy,avg_mvpa_girl, zero_to_30,thirty_to_40,forty_to_50,fifty_to_60,sixty_to_70,seventy_to_80,Eighty_to_90,ninty_over,
 				mvpa_socio1,mvpa_socio2,mvpa_socio3,mvpa_socio4,walk_socio1,walk_socio2,walk_socio3,walk_socio4,
-				R_mvpa_socio,R_mvpa_sport,R_mvpa_crime,R_mvpa_walk,R_mvpa_fit,R_mvpa_outplay, R_mvpa_dmin_outplay,
+				R_mvpa_socio,R_mvpa_sport,R_mvpa_crime,R_mvpa_walk,R_mvpa_fit,R_mvpa_outplay, R_mvpa_dmin_outplay,R_simd,R_car,R_friends,
 				mvpa_home,mvpa_sc,mvpa_road,mvpa_play_field,mvpa_park,mvpa_PG,mvpa_amenity,mvpa_shops,mvpa_F_home,mvpa_fsa,mvpa_OD,mvpa_home_garden,
-				fsa_time,OD_time,SD_mvpa];
+				fsa_time,OD_time];
 		save tmp to:file_name+"/Sim_stat/sim_stat.csv" type: "csv" rewrite:false header:true;
 		
 	}
 	
 	action write_headings{
-		save list(["imp_friends","school_inter","Neigh_play","friend_meet","imp_kids","avg_mvpa", "mvpa_boys","mvpa_girls","0_30", "30_40","40_50","50_60","60_70","70_80","80_90",
-					"more90","mvpa1","mvpa2","mvpa3","mvpa4","walk1","walk2","walk3","walk4",
-					"R_socio","R_sport","R_crime","R_walk", "R_fit","R_outplay","R_min_outplay",
+		save list(["S_name","travel_mode","imp_friends","school_inter","Neigh_play","friend_meet","imp_kids",
+		            "avg_mvpa","SD_mvpa","per_avg_under_sixty","per_sixty_daily","mvpa_boys","mvpa_girls",
+		            "0_30", "30_40","40_50","50_60","60_70","70_80","80_90","more90",
+		            "mvpa1","mvpa2","mvpa3","mvpa4","walk1","walk2","walk3","walk4",
+					"R_socio","R_sport","R_crime","R_walk", "R_fit","R_outplay","R_min_outplay","R_simd","R_car","R_friends",
 					"PA_home","PA_sc","PA_road","PA_Pfield","PA_park","PA_PG","PA_amenity","PA_SHOP","PA_F_home","PA_FSA","PA_OD","PA_H_garden","fsa_time","OD_time"])	
 					to: "../includes/results/"+save_file+"/Sim_stat/sim_stat.csv" type: "csv" rewrite:false header:true;	
 	}
@@ -571,9 +601,10 @@ reflex save_simulation when:days=save_on_day and current_hour=8.0{
 			a_s_play<-false;  
 			add tot_mvpa to:list_mvpa;
 			avg_mvpa<-mean(list_mvpa);
+			per_days_sixt<-length(list_mvpa where (each>=60))/length(list_mvpa);
 			int last<-length(list_mvpa)-1;
 			int start<-max(0,last-30);
-			avg_mvpa_recent<-mean(copy_between (list_mvpa,start,last));//average MVPA in the last month
+			//avg_mvpa_recent<-mean(copy_between (list_mvpa,start,last));//average MVPA in the last month
 			tot_mvpa<-0;
 			act_list<-my_garden=nil?[1,2]:[1,2,3];//updating the list of activities from home shoping=1, neigh=2,garden=3
 			meeting_friends<-false;
@@ -657,13 +688,26 @@ species zone{
 	int simd; 
 	float crimeRate;
 	float norm_crime;
-	float zone_mvpa<-0.0;
 	int avg_dis_sh;
 	int neigh_play<-0;//count children playing in neigh
 	float daily_play_per_child<-0.0;
-	float avg_FSA<-0.0;
-	float avg_walk<-0.0;
-	float daily_OD<-0.0;
+	float avg_FSA;
+	float avg_walk;
+	float daily_OD;
+	float zone_mvpa;
+	float mvpa_home; //home
+	float mvpa_sc ; //school
+	float mvpa_road; //road
+	float mvpa_play_field ; //playing fields
+	float mvpa_home_garden ; //home Garden
+	float mvpa_park;//Park
+	float mvpa_PG ;//Public garden
+	float mvpa_amenity ;//Amenity space
+	float mvpa_shops ;//shops
+	float mvpa_F_home; //friends home
+	float mvpa_fsa ;//FSA
+	float mvpa_OD;//total outdoor	
+	
 	reflex count_neigh_play when: current_hour=8.0{
 		daily_play_per_child<-neigh_play/(nm_children*days);	
 	}
@@ -681,9 +725,22 @@ species zone{
 		zone_mvpa<-children where(each.my_zone=self) mean_of (mean(each.list_mvpa));	
 	}
 	action zone_stat{
-	avg_FSA<-children where(each.my_zone=self) mean_of (each.num_sport);
-	avg_walk<-children where(each.my_zone=self) mean_of (each.avg_walk);
-	daily_OD<-children where(each.my_zone=self) mean_of (each.daily_od);	
+	list<children> my_children<-children where(each.my_zone=self); 
+	avg_FSA<-my_children mean_of (each.num_sport);
+	avg_walk<-my_children mean_of (each.avg_walk);
+	daily_OD<-my_children mean_of (each.daily_od);
+	mvpa_home<-my_children mean_of(each.mvpa_home) ; //home
+	mvpa_sc<-my_children mean_of(each.mvpa_sc) ; //school
+	mvpa_road<- my_children mean_of(each.mvpa_road); //road
+	mvpa_play_field<-my_children mean_of(each.mvpa_play_field) ; //playing fields
+	mvpa_home_garden<-my_children mean_of(each.mvpa_home_garden) ; //home Garden
+	mvpa_park<-my_children mean_of(each.mvpa_park) ;//Park
+	mvpa_PG<-my_children mean_of(each.mvpa_PG) ;//Public garden
+	mvpa_amenity<-my_children mean_of(each.mvpa_amenity) ;//Amenity space
+	mvpa_shops<-my_children mean_of(each.mvpa_shops) ;//shops
+	mvpa_F_home<-my_children mean_of(each.mvpa_F_home); //friends home
+	mvpa_fsa<-my_children mean_of(each.mvpa_fsa) ;//FSA
+	mvpa_OD<-my_children mean_of(each.daily_od_mvpa) ;//total outdoor	
 	}
 }
 species sport_activity{
@@ -777,56 +834,44 @@ species building {
 species children skills: [moving] {
 	//charctaristics
 	zone my_zone;
-	path school_route;
 	string gender<-flip(0.5)? "boy":"girl";
 	int socio; //4 social levels 1-richest 4-poorest based on AB, C1,C2,DE
-	list<children>my_best_friends;
-	children goto_friend;////the friend to visit
-	list<children> host_friends;//the friends that are hosted 
-	bool meeting_friends<-false;
-	float meet_hour;
-	bool with_friends<-false;//when the meeting take place=true 
-	float my_fit<- max(0,gauss ({1, 0.3}));//distribution of fittness  rnd(0.7,1.3)
+	float my_fit<-max(0.3,gauss ({1, 0.3})) ; //distribution of fittness  //rnd(0.7,1.3) 
 	float outplay<-truncated_gauss ({1, 0.5});
-	float fit_dif;
-	float my_crim_imp;
+	//float fit_dif;
+    float my_crime;
+    int my_simd;
+	float my_simd_imp;
+	int num_friends;
 	int num_car;
 	int id_catch;
-	schools my_school;
+	float my_neigh_prob;
 	int dis_school;
-	int dis_target;
-	point target;
-	building my_home;
 	int x_cor;
 	int y_cor;
-	private_garden my_garden;
-	path my_path;
-	string purpuse; //to determine what reflex the agent will implement
-	int duration;
-	int trans_mode<-0;
-	float my_speed;
-	bool return_home<-false;
-	bool goto_school<-false;
-	//transportation mode
 	float school_walk_prob;//probability to walk to school
-	//float leave_hour; //added to end of school time 15+leave_hour
-	//lu reference polygons
-	list<landuse_polygon> after_sc_poly;
-	list<landuse_polygon> neigh_poly;
-	map<landuse_polygon,int> neigh_map;
-	map<landuse_polygon,int> after_sc_map;
-	list<food_drink> list_food_drink;
 	//Physical activity
-	float my_mvpa<-0.0;//the current probability for mvpa- based on the activity
 	float avg_mvpa;//average daily mvpa
-	float avg_mvpa_recent;//mvpa in the last two weeks
-	int tot_mvpa<-0;//the mvpa during the day-accumulates during the day
-	list<int> list_mvpa;
-	list<int> list_lu_mvpa<-list_with(27,0);
+	//float avg_mvpa_recent;//mvpa in the last two weeks
 	float avg_walk;
 	int daily_od;
 	int daily_od_mvpa;
+	int mvpa_home; //home
+	int mvpa_sc ; //school
+	int mvpa_road; //walking
+	float mvpa_play_field; //all types of playing fields
+	int mvpa_home_garden; //home Garden
+	float mvpa_park ;//Park
+	float mvpa_PG;//Public garden
+	float mvpa_amenity;//Amenity space
+	float mvpa_shops;//shoping
+	float mvpa_F_home; //friends home
+	int mvpa_fsa;//FSA
+	float per_days_sixt;	
+	//####Variable related to agents actions
 	//activities
+	int dis_target;
+	list<children>my_best_friends;
 	list<int> act_list;
 	list<int> lu_list<-list_with(27,0);//list the counts the time spent on each landuse. Land use is organised by code in the list
 	string my_activity;
@@ -837,8 +882,32 @@ species children skills: [moving] {
 	landuse_polygon selected_polygon;
 	list<sport_activity> formal_sport_act;
 	sport_activity today_sport;
-	float my_neigh_prob;
-	
+	list<int> list_mvpa;
+	list<int> list_lu_mvpa<-list_with(27,0);
+	int tot_mvpa<-0;//the mvpa during the day-accumulates during the day
+	float my_mvpa<-0.0;//the current probability for mvpa- based on the activity
+	point target;
+	building my_home;
+	schools my_school;
+	children goto_friend;////the friend to visit
+	list<children> host_friends;//the friends that are hosted 
+	bool meeting_friends<-false;
+	float meet_hour;
+	bool with_friends<-false;//when the meeting take place=true 
+	path school_route;
+	list<landuse_polygon> after_sc_poly;
+	list<landuse_polygon> neigh_poly;
+	map<landuse_polygon,int> neigh_map;
+	map<landuse_polygon,int> after_sc_map;
+	list<food_drink> list_food_drink;
+	private_garden my_garden;
+	path my_path;
+	string purpuse; //to determine what reflex the agent will implement
+	int duration;
+	int trans_mode<-0;
+	float my_speed;
+	bool return_home<-false;
+	bool goto_school<-false;
 	
 	aspect default {
 		if target!=nil and trans_mode=2{draw  square(12)  color:#black;}
@@ -848,6 +917,21 @@ species children skills: [moving] {
 		}
 		if my_activity="Neigh play" and target=nil{draw circle(8) border:#black color:#cyan;}
 	    if my_activity="Planned sport" and target=nil{draw circle(8) border:#black color:#blue;}
+	}
+	
+	action collect_mvpa{
+		mvpa_home<-list_lu_mvpa[1]/(days-1) ; //home
+		mvpa_sc<-list_lu_mvpa[20]/(days-1)  ; //school
+		mvpa_road<- list_lu_mvpa[23]/(days-1) ; //walking
+		mvpa_play_field<- (list_lu_mvpa[15]+list_lu_mvpa[21]+list_lu_mvpa[14])/(days-1) ; //playing fields
+		mvpa_home_garden<-list_lu_mvpa[17]/(days-1) ; //home Garden
+		mvpa_park<-list_lu_mvpa[18]/(days-1)  ;//Park
+		mvpa_PG<-list_lu_mvpa[3]/(days-1)  ;//Public garden
+		mvpa_amenity<-list_lu_mvpa[2]/(days-1) ;//Amenity space
+		mvpa_shops<-list_lu_mvpa[7]/(days-1) ;//shoping
+		mvpa_F_home<-list_lu_mvpa[24]/(days-1) ; //friends home
+		mvpa_fsa<-list_lu_mvpa[26]/(days-1) ;//FSA
+		
 	}
 	
 	action show_myself{
@@ -876,15 +960,13 @@ species children skills: [moving] {
 			dis_target<-int(my_route.edges sum_of (each.perimeter));
 			float walk_prob;
 			if purpuse='go_school'{
-				//walk_prob<-1.0;   //walk all dis to school   
-				//walk_prob<-dis_school<=1500?1:school_walk_prob; //walking to school scenario and walk all
-				walk_prob<-school_walk_prob ;	
+				walk_prob<-travel_mode="active_school" or travel_mode="walk_all"?1.0:school_walk_prob;
+				  //walk_prob<-dis_school<=1500?1:school_walk_prob; //walking to school scenario and walk all
 			}
 			else {
-				//walk_prob<-1.0; //walk all distance
+				if travel_mode="walk_all"{walk_prob<-1.0;}
+				else{walk_prob<-num_car=0 or dis_target<300? 1: 0.3 *0.9^(my_home.walk_quant-1)+0.2*0.8^num_car+0.5*0.7^((dis_target/300)-1) ;	}
 				//walk_prob<-num_car=0 or dis_target<1500? 1: 0.3 *0.9^(my_home.walk_quant-1)+0.2*0.8^num_car+0.5*0.7^((dis_target/300)-1) ; //for scenario walk all dis<1500	
-				walk_prob<-num_car=0 or dis_target<300? 1: 0.3 *0.9^(my_home.walk_quant-1)+0.2*0.8^num_car+0.5*0.7^((dis_target/300)-1) ;	
-			
 			}	
 	
 			trans_mode<- flip(walk_prob)? 1:2;//prob for: walk=1, car=2	
@@ -899,7 +981,7 @@ species children skills: [moving] {
 		
 		if  trans_mode=1 {
 			if flip(mvpa_walk){ //flip(0.4*my_fit)
-				tot_mvpa<- tot_mvpa+1; //updating MVPA when walkingo
+				tot_mvpa<- tot_mvpa+1; //updating MVPA when walking
 				list_lu_mvpa[23]<-list_lu_mvpa[23]+1; 	
 			} 
 			
@@ -919,10 +1001,10 @@ species children skills: [moving] {
 			float social_inf<-(1-imp_f)*my_fit+imp_f*my_best_friends mean_of(each.my_fit);
 	 		int tmp_mvpa;
 	 		if gender= 'boy'{
-	 			tmp_mvpa<-social_inf*(40*mvpa_recess_b+(320-SC_inter)*mvpa_school+rnd(1,15)*mvpa_arrival_b+PE*60*mvpa_pe_b+ mvpa_pe_b*SC_inter);//MVPA for two break-time, during class and for arraivel	
+	 			tmp_mvpa<-mvpa_school*(320-SC_inter)+social_inf*(40*mvpa_recess_b+rnd(1,15)*mvpa_arrival_b+PE*60*mvpa_pe_b+ mvpa_pe_b*SC_inter);//MVPA for two break-time, during class and for arraivel	
 	 		}
 	 		else {
-	 		    tmp_mvpa<-social_inf*(40*mvpa_recess_g+(320-SC_inter)*mvpa_school+rnd(1,15)*mvpa_arrival_g+PE*60*mvpa_pe_g+mvpa_pe_g*SC_inter);//MVPA for two break-time, during class and for arraivel	
+	 		    tmp_mvpa<-mvpa_school*(320-SC_inter)+ social_inf*(40*mvpa_recess_g+rnd(1,15)*mvpa_arrival_g+PE*60*mvpa_pe_g+mvpa_pe_g*SC_inter);//MVPA for two break-time, during class and for arraivel	
 	 		}
 	 		tot_mvpa<-tot_mvpa +tmp_mvpa; 
 	 		list_lu_mvpa[20]<-list_lu_mvpa[20]+tmp_mvpa;	
@@ -966,8 +1048,8 @@ species children skills: [moving] {
 	reflex school_time when:purpuse='stay_school'{
 		//end of school
 	 	if current_hour>=15.0{
-	 			float prob<-trans_mode=2? outplay*a_s/3:outplay*a_s; //incase the child is returning by car the likelyhood to stop decrease
-	 			if have_formal and trans_mode=1{prob<-today_sport.hour-15.0>1?outplay*a_s:outplay*a_s/3; } //in case the FSA start is in one hour the likelyhood to stop decrease
+	 			float prob<-trans_mode=2? my_simd_imp*outplay*a_s/3:my_simd_imp*outplay*a_s; //incase the child is returning by car the likelyhood to stop decrease
+	 			if have_formal and trans_mode=1{prob<-today_sport.hour-15.0>1?my_simd_imp*outplay*a_s:my_simd_imp*outplay*a_s/3; } //in case the FSA start is in one hour the likelyhood to stop decrease
 	 			if flip(prob)    {
 	 				do transport_mode(true);
 	 				purpuse<-'go_activity';
@@ -1049,13 +1131,17 @@ species children skills: [moving] {
 			}
 		}
 		count_a_s<-count_a_s+1;
-		do act_details(70, 20,"AS play",selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);	
+		do act_details(90, 20,"AS play",selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);	//duration 80
 	}
 	
 	action act_details(int dur_avg, int dur_SD,string act_name, point loc,float mvpa, int the_code){
-		if have_formal and with_friends=false {duration<- min(60*(today_sport.hour-current_hour-0.5),duration);}//the agent activity durtation is affected by the hour of the FSA
+		if have_formal and with_friends=false { 
+			duration<- max(30,-1*dur_avg*ln(1-rnd(0.0,0.999))); 
+			duration<- min(60*(today_sport.hour-current_hour-0.5),duration); ////the agent activity durtation is affected by the hour of the FSA
+			  
+		}
 		else{
-			duration<- max(15,-1*dur_avg*ln(1-rnd(0.0,0.999)));    //int(max(15,truncated_gauss([dur_avg, dur_SD])));
+			duration<- max(30,-1*dur_avg*ln(1-rnd(0.0,0.999)));    //int(max(15,truncated_gauss([dur_avg, dur_SD])));
 			duration<-min(120,duration);
 		}
 		my_activity<-act_name;
@@ -1250,13 +1336,13 @@ species children skills: [moving] {
 			}
 			trans_mode<-1;
 			do transport_mode(true);
-			do act_details(70, 30,"Neigh play", selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);				
+			do act_details(90, 30,"Neigh play", selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);				
 					 
 		}
 		
 		action friends_meeting { 
 			float g<- mean(host_friends collect (each.outplay)+self.outplay); //joint basic probability of friends to play outdoors
-			float fq<-min(1,g*f_o*my_crim_imp);//the probability to play outdoors with impact of neigh and crime
+			float fq<-min(1,g*f_o*my_simd_imp);//the probability to play outdoors with impact of neigh and crime
 			if flip(fq){ //average of the tendencey of all friends to go out* probability of freinds to goout(f_o)
 				count_friends_out<-count_friends_out+1;
 				with_friends<-true;
@@ -1267,7 +1353,7 @@ species children skills: [moving] {
 					purpuse<-'go_meet';
 					with_friends<-true;
 					selected_polygon<-goto_friend.selected_polygon;	
-					do act_details(70, 30,"Neigh play", selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);
+					do act_details(90, 30,"Neigh play", selected_polygon.location,self.gender="boy"?selected_polygon.mvpa_prob_B:selected_polygon.mvpa_prob_G,selected_polygon.code);
 					duration<-goto_friend.duration;//keeping the same duration for all friends meeting
 					do transport_mode(false);
 				}		
@@ -1276,7 +1362,7 @@ species children skills: [moving] {
 				with_friends<-true;
 				purpuse<-'stay_meet';//the host stay home for the meeting
 				count_friends_in<-count_friends_in+1;
-				duration<- max(30,-1*70*ln(1-rnd(0.0,0.9999)));    //int(max(15,truncated_gauss([dur_avg, dur_SD])));
+				duration<- max(30,-1*70*ln(1-rnd(0.0,0.9999)));    
 				duration<-min(120,duration);//the host set the duration of the meeting
 				my_activity<-'Host friends'	;
 				my_lu_code<-24;
@@ -1286,7 +1372,7 @@ species children skills: [moving] {
 					count_friends_in<-count_friends_in+1;
 					purpuse<-'go_meet';
 					with_friends<-true;
-					do act_details(70, 30,"friends' home",goto_friend.my_home.location,gender="boy"?mvpa_friends_in_b:mvpa_friends_in_g,24);	
+					do act_details(90, 30,"friends' home",goto_friend.my_home.location,gender="boy"?mvpa_friends_in_b:mvpa_friends_in_g,24);	
 					duration<-goto_friend.duration; //keeping the same duration for all friends meeting
 					do transport_mode(false);	
 				}
@@ -1322,7 +1408,7 @@ experiment children_activity type: gui until:days=60 {
 	parameter "Kids impact" var:imp_kids category:'Impacts';//impact of others palying in area
 	parameter "Friends impact my_fit" var:imp_f category:'Impacts';
 	parameter "School intervention" var:SC_inter category:'Interventions';//duration of extra PA activity in school
-	//parameter "Neigh impact" var:imp_att category:'Impacts';//impact of attractivity of agent's area
+	parameter "Travel mode" var:travel_mode category:'Travel';//usual, walk_school,walk_all
 	
 	output {		
 		display MVPA refresh:current_hour=8.00 {
@@ -1337,8 +1423,8 @@ experiment children_activity type: gui until:days=60 {
 		
 			
 			chart "MVPA minutes" type: histogram  background: rgb("lightGray") position:{0.1,0.0} size:{0.8,0.5} tick_font_size:12 y_label:"Count"{
-				datalist (distribution_of(children collect each.avg_mvpa,14,0,140) at "legend") 
-            	value:(distribution_of(children collect each.avg_mvpa,14,0,140) at "values") ;   
+				datalist (distribution_of(children collect each.avg_mvpa,28,0,140) at "legend") 
+            	value:(distribution_of(children collect each.avg_mvpa,28,0,140) at "values") ;   
 									
 		 }	
 		}
@@ -1377,16 +1463,15 @@ experiment children_activity type: gui until:days=60 {
 			}
 			 	
 	}
-	
-	display Stat refresh:false{
-	
-	chart "Outdoor play probability" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
-				datalist (distribution_of(children collect each.my_neigh_prob,10,0,1) at "legend") 
-            	value:(distribution_of(children collect each.my_neigh_prob,10,0,1) at "values") ;   
+	display fract_mvpa60 refresh:current_hour=9.00{
+		chart "frac days mvpa 60" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
+				datalist (distribution_of(children collect each.per_days_sixt,10,0,1) at "legend") 
+            	value:(distribution_of(children collect each.per_days_sixt,10,0,1) at "values") ;   
 									
-		}	
-		
-		
+		}		
+	}
+	
+	display Stat refresh:false{	
 	chart "Socio-economic" type: pie  background: rgb("lightGray") position:{0.5,0} size:{0.5,0.5} label_font_size:30{
 				
 				data "[DE]"  value: length(children where( (each.socio)=1)) color:#lightgreen;
@@ -1475,37 +1560,40 @@ experiment children_activity type: gui until:days=60 {
 		monitor "zone SD mvpa" value: int(zone variance_of(each.zone_mvpa)^0.5);
 		monitor "% <=60 MVPA" value:int(100*length(children where(each.avg_mvpa<=60))/nm_agents );
 		monitor "% walking" value: per_walking;
+		monitor "r fit&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_fit)) with_precision 2 refresh_every: 240;
 		//monitor "r Socio&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.socio)) with_precision 2 refresh_every: 240;
 		//monitor "r Sport&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.num_sport)) with_precision 2 refresh_every: 240;
 		//monitor "r crime&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_zone.norm_crime)) with_precision 2 refresh_every: 240;
 		//monitor "r Walk&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.avg_walk)) with_precision 2 refresh_every: 240;
 		//monitor "r Walk&sport" value:(children collect(each.num_sport))  correlation (children collect(each.avg_walk)) with_precision 2 refresh_every: 240;
-		//monitor "r fit&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_fit)) with_precision 2 refresh_every: 240;
+		
 		//monitor "r outdoor&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.outplay)) with_precision 2 refresh_every: 240;
 		
 	}
 }
 
-experiment 'Run_multi_simulations' type: batch repeat: 20 until:days>save_on_day{
-	parameter "File name" var:save_file<-"Scenario";
-	parameter "save on day" var:save_on_day<-25;
+experiment 'Run_multi_simulations' type: batch repeat: 1 until:days>save_on_day{
+	parameter "File name" var:save_file<-"Scenario_v2_test_school_fit";
+	parameter "save on day" var:save_on_day<-26;
 	parameter 'Meet friends:' var: f_m among:[2/5] ;
 	parameter 'After school:' var: a_s among:[2/5] ;
-	parameter "Kids impact" var:imp_kids among:[0.25];
-	parameter "Day of neigh play" var:n_p among:[3/5];
+	parameter "Kids impact" var:imp_kids among:[0.25]; //0.25 [,0.125,0.25,0.5,0.75,1.25, 1.5,1.75, 2]
+	parameter "Day of neigh play" var:n_p among:[1/5,2/5,3/5];
 	parameter "School intervention" var:SC_inter among:[0];		//[0,30,60]
 	parameter "Friends impact" var:imp_f among:[0.3];                //[0.0,0.5,0.9];
+	parameter "Travel mode" var:travel_mode among:["usual"];//among:["usual", "active_school","walk_all"]
 	init{
 		int counter<-1;	
 		write "started simulation+"+self+ date("now");
 		if counter=1{
-			string file_name<-"Scenario";//update this name the same as save_file name!!!!!!!!!!!!
-			save list("imp_friends","school_inter","Neigh_play","friend_meet","imp_kids","avg_mvpa", "mvpa_boys","mvpa_girls",
-					"0_30", "30_40","40_50","50_60","60_70","70_80","80_90",
-					"more90","mvpa1","mvpa2","mvpa3","mvpa4","walk1","walk2","walk3","walk4",
-					"R_socio","R_sport","R_crime","R_walk", "R_fit","R_outplay","R_min_outplay",
-					"PA_home","PA_sc","PA_road","PA_Pfield","PA_park","PA_PG","PA_amenity","PA_SHOP","PA_F_home",
-					"PA_FSA","PA_OD","PA_H_garden","fsa_time","OD_time","SD_mvpa")	
+			string file_name<-"Scenario_v2_test_school_fit";//update this name the same as save_file name!!!!!!!!!!!!
+			save list("S_name","travel_mode","imp_friends","school_inter","Neigh_play","friend_meet","imp_kids",
+		            "avg_mvpa","SD_mvpa","per_avg_under_sixty","per_sixty_daily","mvpa_boys","mvpa_girls",
+		            "0_30", "30_40","40_50","50_60","60_70","70_80","80_90","more90",
+		            "mvpa1","mvpa2","mvpa3","mvpa4","walk1","walk2","walk3","walk4",
+					"R_socio","R_sport","R_crime","R_walk", "R_fit","R_outplay","R_min_outplay","R_simd","R_car","R_friends",
+					"PA_home","PA_sc","PA_road","PA_Pfield","PA_park","PA_PG","PA_amenity","PA_SHOP","PA_F_home","PA_FSA","PA_OD","PA_H_garden",
+					"fsa_time","OD_time")	
 					to: "../includes/results/"+file_name+"/Sim_stat/sim_stat.csv" type: "csv" rewrite:false header:true;	
 		}
 		counter<-counter+1;
