@@ -10,8 +10,8 @@ How to use the model?
 1) Click on Code--> download zip
 2) Extract the zip file
 3) Open the GAMA-PLATFORM environment
-4) Pate the extracted file "ABM_Children_activity-master" in GAMA under user models
-5) Click ABM_Children_activity-master--> models-->children_activity2
+4) Paste the extracted file "ABM_Children_activity-master" in GAMA under user models
+5) In GAMA: Click ABM_Children_activity-master--> models-->children_activity2
 6) In the right side window click the green botton called children_activity
 7) The model will be uploaded and initialized (may take few minutes)
 8) Click the play botton the start the model
