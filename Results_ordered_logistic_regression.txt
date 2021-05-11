@@ -1,7 +1,7 @@
 
 The ABM implements the results of an ordered logistic regression to assign the freqency of active travel to school for each agent based on distance to school and walkability index.
 The following are the results of an analysis of frequency of active travel to school reported by 713 pupils (10-11 year olds).
-The frequency is divided into 4 levels of weekdays travel: no active travel, 1-2 days, 3-4 days, every day 
+The frequency is divided into 4 levels of weekdays active travel: no active travel, 1-2 days, 3-4 days, everyday 
 The predecting variables include: distance to school, Walkability index (divided into quintiles), Season, latitude of city, urban definition (7 levles from urban to rural))
 
 
