@@ -6,7 +6,7 @@ The ABM generates a synthetic population of agents representing 9-11 year-olds r
 The code is written using the GAMA-Platform.
 The ABM is using GIS files covering an area of 53 data zones in Glasgow, Scotalnd. The ABM can also simulate a more extensive area of 120 data zones, but due file size limitation  the files are not included here.   
 
-How to use the model?
+## How to use the model?
 1) Click on Code--> download zip
 2) Extract the zip file
 3) Open the GAMA-PLATFORM environment
