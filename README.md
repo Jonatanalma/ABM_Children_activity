@@ -1,4 +1,4 @@
-# Agent-based model of children's physical activity in an urban environment
+# An agent-based model of children's physical activity in an urban environment
 
 An agent-based model (ABM) that explores how changes to outdoor play, school-based activities and active travel affect children’s physical activity (PA). Unique to this model is the ability to represent the complexity of multiple interdependent levels including built and social environment, individual characteristics, constraints of time/space, and policy measures, which influence PA. 
 
