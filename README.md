@@ -4,7 +4,7 @@ An agent-based model (ABM) that explores how changes to outdoor play, school-bas
 
 The ABM generates a synthetic population of agents representing 9-11 year-olds residing in the city of Glasgow, characterised by socio-economic demographics consistent with census data. The urban environment is represented by geospatial data layers, including land use, houses, schools and street networks. Agents follow a daily schedule: attending school, formal sport, outdoor play and meeting with friends. Agents’ decisions regarding the location of an activity and travel mode are affected by land use availability, accessibility, crime levels and street walkability. As agents engage in activities, they accumulate minutes of moderate-to-vigorous PA (MVPA). To define the proportion of time spent in MVPA per activity and site we used empirical data of children's PA data collected in the SPACES project. 
 The code is written using the GAMA-Platform.
-The ABM is using GIS files covering an area of 53 data zones in Glasgow, Scotalnd. The ABM can also simulate a more extensive area of 120 data zones but due file size limitation  the files are not included here.   
+The ABM is using GIS files covering an area of 53 data zones in Glasgow, Scotalnd. The ABM can also simulate a more extensive area of 120 data zones, but due file size limitation  the files are not included here.   
 
  
 
