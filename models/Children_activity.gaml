@@ -812,11 +812,11 @@ species children skills: [moving] {
 	zone my_zone;
 	string gender<-flip(0.5)? "boy":"girl";
 	int socio; //4 social levels 1-richest 4-poorest based on AB, C1,C2,DE
-	float my_fit<-max(0.3,gauss ({1, 0.3})) ; //distribution of fittness  //rnd(0.7,1.3) 
-	float outplay<-truncated_gauss ({1, 0.5});
+	float my_fit<-max(0.3,gauss ({1, 0.3})) ; //distribution of tendency to be active (A)
+	float outplay<-max(0,gauss ({1, 0.3})); //distribution of preference to be outdoor (O)
 	//float fit_dif;
-    float my_crime;
-    int my_simd;
+        float my_crime;
+        int my_simd;
 	float my_simd_imp;
 	int num_friends;
 	int num_car;
@@ -953,10 +953,10 @@ species children skills: [moving] {
 	
 	reflex move_to_target when:target!=nil{
 		
-		do goto on:the_graph target:target speed:my_speed; //the_graph//1= speed of 1 meter/sec = 3.6 km/h (I currently use average speed of 1.2 after testing the simulation)
+		do goto on:the_graph target:target speed:my_speed; 
 		
 		if  trans_mode=1 {
-			if flip(mvpa_walk){ //flip(0.4*my_fit)
+			if flip(mvpa_walk){ 
 				tot_mvpa<- tot_mvpa+1; //updating MVPA when walking
 				list_lu_mvpa[23]<-list_lu_mvpa[23]+1; 	
 			} 
@@ -1024,7 +1024,7 @@ species children skills: [moving] {
 	reflex school_time when:purpuse='stay_school'{
 		//end of school
 	 	if current_hour>=15.0{
-	 			float prob<-trans_mode=2? my_simd_imp*outplay*a_s/3:my_simd_imp*outplay*a_s; //incase the child is returning by car the likelyhood to stop decrease
+	 			float prob<-trans_mode=2? my_simd_imp*outplay*a_s/3:my_simd_imp*outplay*a_s; //incase the child is returning by car the likelyhood to participate decreases
 	 			if have_formal and trans_mode=1{prob<-today_sport.hour-15.0>1?my_simd_imp*outplay*a_s:my_simd_imp*outplay*a_s/3; } //in case the FSA start is in one hour the likelyhood to stop decrease
 	 			if flip(prob)    {
 	 				do transport_mode(true);
@@ -1047,7 +1047,7 @@ species children skills: [moving] {
 		lu_list[my_lu_code]<-lu_list[my_lu_code]+1;
 		duration<-duration-1;
 		if flip(my_mvpa){
-			tot_mvpa<-tot_mvpa+1;	//probability for mvpa varies according to the child fittness
+			tot_mvpa<-tot_mvpa+1;	
 			list_lu_mvpa[my_lu_code]<-list_lu_mvpa[my_lu_code]+1;
 		}
 		if duration<=0 {
@@ -1224,7 +1224,7 @@ species children skills: [moving] {
 				int nm_play<-length(children where(each.my_activity="Neigh play" and each distance_to self<=300));
 				float k<-nm_play>2?min(1.0,imp_kids*nm_play):0;
 				//write ""+nm_play+": prob " + k ;
-				float fq<-min(1,my_neigh_prob*(1+k)); // agent's prob to play in neigh* other children playing and neigh 
+				float fq<-min(1,my_neigh_prob*(1+k)); // agent's prob to play in neigh effected by other children playing in the neigh 
 				return 1-(1-fq)^(1/12);	//probability per selection
 				
 			}
@@ -1286,10 +1286,10 @@ species children skills: [moving] {
 					dis_child<-myself.neigh_map[self];
 					//dis_child<-dis_child<=300?300:dis_child;
 					child_count<-length(children inside(self));	//number of others playing outside
-					float c<-child_count>0? exp(-1/(child_count*0.7)):0;   //1-0.75^child_count;
-					float d<-exp(-dis_child/700);     //0.5^(dis_child/500);
-					float area_inc<-area>10000?1:0.0;//(area>2500?0.8:0.5); 
-					rank<-0.6*d+0.2*c+0.2*area_inc;	//
+					float c<-child_count>0? exp(-1/(child_count*0.7)):0;   
+					float d<-exp(-dis_child/700);     
+					float area_inc<-area>10000?1:0.0;
+					rank<-0.6*d+0.2*c+0.2*area_inc;	
 				}
 			neigh_poly<- (reverse(neigh_poly sort_by(each.rank))); 
 			int size_list<-length(neigh_poly);
