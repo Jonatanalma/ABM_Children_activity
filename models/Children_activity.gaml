@@ -36,10 +36,10 @@ global {
 	int save_on_day<-100;
 	string save_file<-'scenario';
 	float max_visits<-0.0;
-    float min_visits<-0.0;
+        float min_visits<-0.0;
 	float max_less_min<-1.0;
 	//MVPA probabilities
-	float mvpa_walk<-float(data[5,23]);///###23   rnd (0.8, 1.2, 0.05)
+	float mvpa_walk<-float(data[5,23]);///###23   
 	float mvpa_pe_b<-float(data[6,19]);////19
 	float mvpa_pe_g<-float(data[5,19]);////19
 	float mvpa_arrival_b<-float(data[6,9]);//9
@@ -89,7 +89,7 @@ global {
 	float f_o<-0.5; //prob of friends to goout
 	float s_a<-1/5;//prob shopping 
 	float g_a<-0.0; //prob for garden play
-	float imp_kids<-0.25;
+	float imp_kids<-0.1;
 	float imp_f<-0.3; //impact of friends on my_fit
 	string travel_mode<-"usual" among:["usual", "active_school","walk_all"];
 	graph child_graph<-([]);
@@ -103,7 +103,7 @@ global {
 	 *    - FloydWarshall: ensure to find the best shortest path - compute all the shortest paths at the same time (and keep them in memory): https://en.wikipedia.org/wiki/Floyd-Warshall_algorithm
 	 */
 	init { 
-		//seed<-10.0;
+		//seed<-10.0; enable if you want to keep the same seed for every simulation
 		date started<-date("now"); write "Start initialise:"+started;
 		date tmp_date<- date("now");
 		do create_layers; write "create layers: "+ (date("now")-tmp_date);tmp_date<- date("now");
@@ -616,28 +616,6 @@ reflex save_simulation when:days=save_on_day and current_hour=8.0{
 		}			
 	} 
 
-action do_regression{
- 	regression factors;
- 	matrix<float> tmp_matrix<-0.0 as_matrix{8,length(children)};
- 	int row<-0;
- 	ask children{
- 		tmp_matrix[0,row]<-avg_mvpa;
- 		tmp_matrix[1,row]<-num_sport;
- 		tmp_matrix[2,row]<-dis_school;
- 		tmp_matrix[3,row]<-avg_walk;
- 		tmp_matrix[4,row]<-my_fit;
- 		tmp_matrix[5,row]<-outplay;
- 		tmp_matrix[6,row]<-gender="boy"?0:1;
- 		tmp_matrix[7,row]<-socio;
- 		row<-row+1;		
- 	}
- 	write tmp_matrix;
- 	factors<-build (tmp_matrix);
- 	write factors;
- 	write predict(factors,[1,500,30,0.8,1.0,1,1]);
-	}
-
-}
 
 
 species private_garden{
@@ -789,9 +767,7 @@ species food_drink{
 	}	
 }	
 
-//grid cell cell_width:100 cell_height:100 neighbors: 8  {		
-//}	
-
+	
 species landuse_polygon{
 	int poly_id;
 	rgb color;
@@ -1246,10 +1222,10 @@ species children skills: [moving] {
 			}
 			if act=2{//neigh play
 				int nm_play<-length(children where(each.my_activity="Neigh play" and each distance_to self<=300));
-				float k<-nm_play>2?min(1.0,imp_kids*nm_play/3):0;
+				float k<-nm_play>2?min(1.0,imp_kids*nm_play):0;
 				//write ""+nm_play+": prob " + k ;
 				float fq<-min(1,my_neigh_prob*(1+k)); // agent's prob to play in neigh* other children playing and neigh 
-				return 1-(1-fq)^(1/12);	//probability per 
+				return 1-(1-fq)^(1/12);	//probability per selection
 				
 			}
 			if act=3{//garden
@@ -1577,7 +1553,7 @@ experiment 'Run_multi_simulations' type: batch repeat: 1 until:days>save_on_day{
 	parameter "save on day" var:save_on_day<-26;
 	parameter 'Meet friends:' var: f_m among:[2/5] ;
 	parameter 'After school:' var: a_s among:[2/5] ;
-	parameter "Kids impact" var:imp_kids among:[0.25]; //0.25 [,0.125,0.25,0.5,0.75,1.25, 1.5,1.75, 2]
+	parameter "Kids impact" var:imp_kids among:[0.1]; 
 	parameter "Day of neigh play" var:n_p among:[1/5,2/5,3/5];
 	parameter "School intervention" var:SC_inter among:[0];		//[0,30,60]
 	parameter "Friends impact" var:imp_f among:[0.3];                //[0.0,0.5,0.9];
