@@ -1399,8 +1399,8 @@ experiment children_activity type: gui until:days=60 {
 		
 			
 			chart "MVPA minutes" type: histogram  background: rgb("lightGray") position:{0.1,0.0} size:{0.8,0.5} tick_font_size:12 y_label:"Count"{
-				datalist (distribution_of(children collect each.avg_mvpa,28,0,140) at "legend") 
-            	value:(distribution_of(children collect each.avg_mvpa,28,0,140) at "values") ;   
+				datalist (distribution_of(children collect each.avg_mvpa,14,0,140) at "legend") 
+            	value:(distribution_of(children collect each.avg_mvpa,14,0,140) at "values") ;   
 									
 		 }	
 		}
@@ -1440,7 +1440,7 @@ experiment children_activity type: gui until:days=60 {
 			 	
 	}
 	display fract_mvpa60 refresh:current_hour=9.00{
-		chart "frac days mvpa 60" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
+		chart "fraction of days with mvpa>=60" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
 				datalist (distribution_of(children collect each.per_days_sixt,10,0,1) at "legend") 
             	value:(distribution_of(children collect each.per_days_sixt,10,0,1) at "values") ;   
 									
