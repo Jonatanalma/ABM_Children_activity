@@ -616,7 +616,7 @@ reflex save_simulation when:days=save_on_day and current_hour=8.0{
 		}			
 	} 
 
-
+}
 
 species private_garden{
 	int poly_id;
