@@ -7,7 +7,7 @@
 ***/
 
 
-model Children_activity2
+model Children_activity
 
 global {
 	
