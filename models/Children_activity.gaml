@@ -1376,20 +1376,20 @@ experiment children_activity type: gui until:days=60 {
 	parameter "Show zones" var:show_zones;
 	parameter "Assign formal sport" var:include_fsa;
 	parameter "Prob meet friend" var:f_m category:'Activities';       //prob to meet a friend (0.1)
-	parameter "Prob after school" var: a_s category:'Activities'; //prob for after school activity on the route home (0.3)
-	parameter "Prob play neigh" var:n_p category:'Activities'; //prob playing at the neighborhood 0.3
-	parameter "Prob friends play out" var:f_o category:'Activities'; //prob of friends to goout
+	parameter "Prob play outdoor after school" var: a_s category:'Activities'; //prob for after school activity on the route home (0.3)
+	parameter "Prob play outdoor neigh" var:n_p category:'Activities'; //prob playing at the neighborhood 0.3
+	parameter "Prob meeting outdoor" var:f_o category:'Activities'; //prob of friends to goout
 	parameter "Shoping" var: s_a category:'Activities';//prob shopping 0.1
 	parameter "Play in garden" var:g_a category:'Activities';//prob garden 0.2
-	parameter "Kids impact" var:imp_kids category:'Impacts';//impact of others palying in area
-	parameter "Friends impact my_fit" var:imp_f category:'Impacts';
-	parameter "School intervention" var:SC_inter category:'Interventions';//duration of extra PA activity in school
+	parameter "Impact-presence of others outdoor" var:imp_kids category:'Impacts';//impact of others palying in area
+	parameter "Adaptation- my tendency to peers" var:imp_f category:'Impacts';
+	parameter "School intervention, PE min/day" var:SC_inter category:'Interventions';//duration of extra PA activity in school
 	parameter "Travel mode" var:travel_mode category:'Travel';//usual, walk_school,walk_all
 	
 	output {		
 		display MVPA refresh:current_hour=8.00 {
-			chart "Daily MVPA by SES" background: rgb("lightgrey") type: histogram  
-			tick_font_size:14 y_label:"MVPA, min" position:{0.1,0.53} size:{0.5,0.4}  y_range:[0,80]{
+			chart "Daily MVPA by SEP" background: rgb("lightgrey") type: histogram  
+			tick_font_size:14 y_label:"MVPA, min" position:{0.3,0.53} size:{0.5,0.4}  y_range:[0,80]{
 			    data "DE" value:  children where (each.socio=1) mean_of (each.avg_mvpa) color: #green;
 			    data "C2" value:  children where (each.socio=2) mean_of (each.avg_mvpa) color: #blue;
 			    data "C1" value:  children where (each.socio=3) mean_of (each.avg_mvpa) color: #brown;
@@ -1398,7 +1398,7 @@ experiment children_activity type: gui until:days=60 {
 			}	
 		
 			
-			chart "MVPA minutes" type: histogram  background: rgb("lightGray") position:{0.1,0.0} size:{0.8,0.5} tick_font_size:12 y_label:"Count"{
+			chart "MVPA min/day" type: histogram  background: rgb("lightGray") position:{0.1,0.0} size:{0.8,0.5} tick_font_size:12 y_label:"Count"{
 				datalist (distribution_of(children collect each.avg_mvpa,14,0,140) at "legend") 
             	value:(distribution_of(children collect each.avg_mvpa,14,0,140) at "values") ;   
 									
@@ -1439,8 +1439,8 @@ experiment children_activity type: gui until:days=60 {
 			}
 			 	
 	}
-	display fract_mvpa60 refresh:current_hour=9.00{
-		chart "fraction of days with mvpa>=60" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
+	display Fract_60 refresh:current_hour=9.00{
+		chart "Fraction of days with mvpa>=60" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,0.5} tick_font_size:12{
 				datalist (distribution_of(children collect each.per_days_sixt,10,0,1) at "legend") 
             	value:(distribution_of(children collect each.per_days_sixt,10,0,1) at "values") ;   
 									
@@ -1448,20 +1448,20 @@ experiment children_activity type: gui until:days=60 {
 	}
 	
 	display Stat refresh:false{	
-	chart "Socio-economic" type: pie  background: rgb("lightGray") position:{0.5,0} size:{0.5,0.5} label_font_size:30{
+	chart "Socio-economic position" type: pie  background: rgb("lightGray") position:{0.5,0} size:{0.48,0.48} label_font_size:30{
 				
 				data "[DE]"  value: length(children where( (each.socio)=1)) color:#lightgreen;
 				data "[C2]"  value: length(children where( (each.socio)=2)) color:#darkgreen;
 				data "[C1]"  value: length(children where( (each.socio)=3)) color:#blue;
 				data "[AB]"  value: length(children where( (each.socio)=4)) color:#purple;
 		}
-	chart "Formal sport activties" type: pie  background: rgb("lightGray") position:{0.0,0.5} size:{0.5,0.5}  legend_font_size:18{
+	chart "Formal sport activties" type: pie  background: rgb("lightGray") position:{0.1,0.0} size:{0.48,0.48}  legend_font_size:18{
 				data "None"  value: length(children where(each.num_sport=0)) color:#green;
 				data "[1-2]"  value:  length(children where(each.num_sport>0 and each.num_sport<=2))color:#blue;
 				data "[3-4]"  value: length(children where(each.num_sport>2 and each.num_sport<=4)) color:#orange;
 				data "[5]"  value: length(children where(each.num_sport>4)) color:#red;
 		}
-	chart "Percent with >=1 car " type: histogram  background: rgb("lightGray") position:{0.5,0.5} size:{0.5,0.5} tick_font_size:18{
+	chart "Percent with >=1 car " type: histogram  background: rgb("lightGray") position:{0.5,0.5} size:{0.48,0.48} tick_font_size:18{
 				data "[DE]"  value: length(children where(each.socio=1 and each.num_car>0))/length(children where(each.socio=1))  color:#lightgreen;
 				data "[C2]"  value: length(children where(each.socio=2 and each.num_car>0))/length(children where(each.socio=2)) color:#darkgreen;
 				data "[C1]"  value: length(children where(each.socio=3 and each.num_car>0))/length(children where(each.socio=3)) color:#blue;
@@ -1469,14 +1469,14 @@ experiment children_activity type: gui until:days=60 {
 		}
 			
 	}
-	display prob_walk_school{
-		chart "Active walk to school" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,1.0} tick_font_size:12{
+	display Prob_active_travel{
+		chart "School active travel, days/week" type: histogram  background: rgb("lightGray") position:{0,0} size:{0.5,1.0} tick_font_size:12{
 				data "[0]"  value: length(children where( (each.school_walk_prob)=0))/nm_agents color:#gray;
 				data "[1-2]"  value: length(children where ((each.school_walk_prob)>0 and  (each.school_walk_prob)<=0.4))/nm_agents color:#gray;	
 				data "[3-4]"  value: length(children where( (each.school_walk_prob)>0.4 and (each.school_walk_prob)<1))/nm_agents color:#gray;	
 				data "[5]"   value: length(children where( (each.school_walk_prob)=1))/nm_agents color:#gray;						
 		}
-		chart "Walk to school prob" type: histogram  background: rgb("lightGray") position:{0.5,0} size:{0.5,1} label_font_size:30{
+		chart "Probability for school active travel, by SEP " type: histogram  background: rgb("lightGray") position:{0.5,0} size:{0.5,1} label_font_size:30{
 				
 				data "[DE]"  value: (children where( (each.socio)=1))mean_of (each.school_walk_prob) color:#lightgreen;
 				data "[C2]"  value: (children where( (each.socio)=2))mean_of (each.school_walk_prob)  color:#darkgreen;
@@ -1484,7 +1484,7 @@ experiment children_activity type: gui until:days=60 {
 				data "[AB]"  value: (children where( (each.socio)=4))mean_of (each.school_walk_prob) color:#purple;
 		}
 	}
-	display real_time_act{
+	display Real_time_act{
 		chart "real time activity" type: histogram  background: rgb("lightGray") position:{0,0} size:{1,1} label_font_size:30{
 				data "A_Sch"  value:count_a_s color:#lightgreen;
 				data "Garden"  value: count_g_a  color:#darkgreen;
@@ -1497,7 +1497,7 @@ experiment children_activity type: gui until:days=60 {
 			
 	}
 	
-	display landuse_display {
+	display Landuse_display {
 			species landuse_polygon aspect:base;
 			species road aspect: default refresh: false;
 			species building aspect: base refresh:false;
