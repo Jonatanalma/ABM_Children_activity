@@ -1375,7 +1375,7 @@ experiment children_activity type: gui until:days=60 {
 	parameter "Write stats" var:write_stat;
 	parameter "Show zones" var:show_zones;
 	parameter "Assign formal sport" var:include_fsa;
-	parameter "Prob meet friend" var:f_m category:'Activities';       //prob to meet a friend (0.1)
+	parameter "Prob meet friends" var:f_m category:'Activities';       //prob to meet a friend (0.1)
 	parameter "Prob play outdoor after school" var: a_s category:'Activities'; //prob for after school activity on the route home (0.3)
 	parameter "Prob play outdoor neigh" var:n_p category:'Activities'; //prob playing at the neighborhood 0.3
 	parameter "Prob meeting outdoor" var:f_o category:'Activities'; //prob of friends to goout
