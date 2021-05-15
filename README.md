@@ -7,7 +7,7 @@ The ABM generates a synthetic population of agents representing 9-11 year-olds r
 To determine the frequency of active travel to school, each agents evaluates the distance to school and street walkability index. The algorithm used in the model to determine frequency of active travel is based on an analysis of travel to school reported by 713 Scotish children (see results in: ordered logistic regression file). 
 
 The ABM code is written using the GAMA-Platform.
-The ABM is using GIS files covering an area of 53 data zones in Glasgow, Scotalnd. The ABM can also simulate a more extensive area of 120 data zones, but due file size limitation  the files are not included here.   
+The ABM is using GIS files covering an area of 120 data zones in Glasgow, Scotalnd. 
 
 ## How to use the model?
 1) Click on Code--> download zip
