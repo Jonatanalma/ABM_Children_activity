@@ -1536,13 +1536,11 @@ experiment children_activity type: gui until:days=60 {
 		monitor "zone SD mvpa" value: int(zone variance_of(each.zone_mvpa)^0.5);
 		monitor "% <=60 MVPA" value:int(100*length(children where(each.avg_mvpa<=60))/nm_agents );
 		monitor "% walking" value: per_walking;
-		monitor "r fit&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_fit)) with_precision 2 refresh_every: 240;
+		//monitor "r T&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_fit)) with_precision 2 refresh_every: 240;
 		//monitor "r Socio&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.socio)) with_precision 2 refresh_every: 240;
-		//monitor "r Sport&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.num_sport)) with_precision 2 refresh_every: 240;
-		//monitor "r crime&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.my_zone.norm_crime)) with_precision 2 refresh_every: 240;
+		//monitor "r Sport&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.num_sport)) with_precision 2 refresh_every: 240
 		//monitor "r Walk&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.avg_walk)) with_precision 2 refresh_every: 240;
-		//monitor "r Walk&sport" value:(children collect(each.num_sport))  correlation (children collect(each.avg_walk)) with_precision 2 refresh_every: 240;
-		
+		//monitor "r Walk&FSA" value:(children collect(each.num_sport))  correlation (children collect(each.avg_walk)) with_precision 2 refresh_every: 240;
 		//monitor "r outdoor&MVPA" value:(children collect(each.avg_mvpa))  correlation (children collect(each.outplay)) with_precision 2 refresh_every: 240;
 		
 	}
