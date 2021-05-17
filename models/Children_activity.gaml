@@ -1381,8 +1381,8 @@ experiment children_activity type: gui until:days=60 {
 	parameter "Prob meeting outdoor" var:f_o category:'Activities'; //prob of friends to goout
 	parameter "Shoping" var: s_a category:'Activities';//prob shopping 0.1
 	parameter "Play in garden" var:g_a category:'Activities';//prob garden 0.2
-	parameter "Impact-presence of others outdoor" var:imp_kids category:'Impacts';//impact of others palying in area
-	parameter "Adaptation- my tendency to peers" var:imp_f category:'Impacts';
+	parameter "Impact- presence of others outdoor" var:imp_kids category:'Impacts';//impact of others palying in area
+	parameter "Adaptation- agents' tendency to peers" var:imp_f category:'Impacts';
 	parameter "School intervention, PE min/day" var:SC_inter category:'Interventions';//duration of extra PA activity in school
 	parameter "Travel mode" var:travel_mode category:'Travel';//usual, walk_school,walk_all
 	
