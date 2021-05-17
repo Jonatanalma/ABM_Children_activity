@@ -11,7 +11,7 @@ model Children_activity
 
 global {
 	
-	string scale<-"120zones" among:["Glasgow", "53zones","120zones"];
+	string scale<-"120zones" among:["53zones","120zones"];
 	file private_garden_file <-file('../includes/Layers_glasgow/'+scale+'/Private_Garden_'+scale+'.shp') ;
 	file road_shape_file <- file('../includes/Layers_glasgow/'+scale+'/Road_'+scale+'.shp') ;
 	file landuse_shape_file<-file('../includes/Layers_glasgow/'+scale+'/Landuse_'+scale+'.shp');
